@@ -1,0 +1,47 @@
+{
+  "name": "digital-house-d3-clase-01",
+  "version": "1.0.0",
+  "description": "Grafico de barras",
+  "main": "webpack.config.js",
+  "scripts": {
+    "pre": "npm i -g yarn && yarn global add pm2 webpack",
+    "dev": "webpack-dev-server --inline --progress --colors --content-base src/ --open --watch-content-base=true --bail",
+    "dev-server": "pm2 kill && webpack && pm2 start ./bin/www --watch && pm2 logs www --lines 100",
+    "start": "pm2 kill && webpack -p && pm2 start ./bin/www",
+    "post-project": "npm uninstall pm2 webpack -g",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 4 versions"
+  ],
+  "author": "Agustin Valeriani",
+  "license": "ISC",
+  "devDependencies": {
+    "autoprefixer": "^7.2.4",
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-preset-env": "^1.6.0",
+    "clean-webpack-plugin": "^0.1.17",
+    "cookie-parser": "^1.4.3",
+    "css-loader": "^0.28.8",
+    "express": "^4.16.2",
+    "extract-text-webpack-plugin": "^3.0.1",
+    "file-loader": "^1.1.5",
+    "html-webpack-plugin": "^2.30.1",
+    "imagemin-webpack-plugin": "^1.5.2",
+    "node-sass": "^4.7.2",
+    "path": "^0.12.7",
+    "postcss-loader": "^2.0.10",
+    "sass-loader": "^6.0.6",
+    "serve-favicon": "^2.4.5",
+    "style-loader": "^0.19.0",
+    "webpack": "^3.10.0",
+    "webpack-config": "^7.5.0",
+    "webpack-dev-server": "2.7.1"
+  },
+  "dependencies": {
+    "d3": "^4.12.2"
+  }
+}
