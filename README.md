@@ -10,7 +10,7 @@ _Node: < 8.9.3_
 
 _Npm: < 5.5.1_
 
-###Instalacion
+###Instalación
 
 `npm run pre`
 
@@ -24,6 +24,6 @@ _Npm: < 5.5.1_
 
 `yarn run dev-server`
 
-###Build de produccion y correr server
+###Build de produccion y correr un servidor
 
 `yarn start`
