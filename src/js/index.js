@@ -8,7 +8,17 @@ const process = () => {
     //     barChart.generateChart();
     // })
 
-    barChart.generateChart();
+    // barChart.generateChart();
+    fetch("http://localhost:3005/svg")
+        .then((resp) => {
+            return resp.text().then((text) => {
+                console.log(JSON.stringify(text))
+                document.getElementById("bar-chart").innerHTML = text;
+            });
+        })
+        .catch((e) => {
+            alert("error" + e);
+        });
 };
 
 

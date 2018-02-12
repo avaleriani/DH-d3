@@ -51,15 +51,17 @@ app.use(cors({
 //     }
 // });
 
-app.use('/svg', function (req, res) {
+app.use('/svg', async (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     try {
-        const svg = generarChart();
+        const svg = await generarChart();
         let resp = {"error": "not found"};
         if (svg) {
             resp = svg;
         }
-        res.status(200).json(resp.toString());
+        res.status(200);
+        res.write(resp);
+        res.end();
     } catch (e) {
         res.send(e);
     }
@@ -76,7 +78,7 @@ generarChart = async () => {
         svg = await getBaseSvg(svg2); //listo
         svg = await setScaleAxis(data, svg);//listo
         svg = await drawData(data, svg);
-        console.log(svg2.svgString());
+
         return svg2.svgString();
     }
     catch (e) {
@@ -108,13 +110,13 @@ drawData = async (data, svg) => {
 // define the line
     const line = d3.line()
         .x(function (d) {
+            console.log(JSON.stringify(d.value.no2, null, 2))
             return x(String(d.key));
         })
         .y(function (d) {
             return y(d.value.no2);
         });
 
-    console.log(JSON.stringify(data, null, 2))
     svg.append("path")
         .data([data])
         .attr("class", "line")
@@ -211,11 +213,11 @@ getData = async () => {
         return JSON.stringify({"error": e});
     }
 };
-//
-// app.use('/', function (req, res) {
-//     res.sendFile(path.join(__dirname + '../../../public/index.html'));
-// });
-//
+
+app.use('/', function (req, res) {
+    res.sendFile(path.join(__dirname + '../../../public/index.html'));
+});
+
 // // catch 404 and forward to error handler
 // app.use(function (req, res, next) {
 //     let err = new Error('Not Found');
