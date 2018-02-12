@@ -4,7 +4,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const Autoprefixer = require('autoprefixer');
 const path = require('path');
-console.log(__dirname)
+
 module.exports = {
     devtool: 'eval',
     plugins: [
