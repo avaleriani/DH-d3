@@ -17,7 +17,7 @@ const process = () => {
             });
         })
         .catch((e) => {
-            alert("error" + e);
+            console.error("error" + e);
         });
 };
 

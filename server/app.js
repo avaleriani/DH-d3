@@ -10,7 +10,6 @@ const cors = require('cors');
 const D3Node = require('d3-node');
 const d3 = require('d3');
 
-
 let app = express();
 
 app.use(favicon('./favicon.ico'));
@@ -63,23 +62,22 @@ app.use('/svg', async(req, res) => {
     res.write(resp);
     res.end();
   } catch(e) {
-    res.send(e);
+    res.status(500);
+    res.write(JSON.stringify(e));
+    res.end();
   }
 
 });
 
 generarChart = async() => {
   try {
-    let svg2 = new D3Node({
-      d3
-    });
     let data = await getData();//listo
     data = await processData(data);//listo
-    svg = await getBaseSvg(svg2); //listo
-    svg = await setScaleAxis(data, svg);//listo
-    svg = await drawData(data, svg);
+    // svg = await getBaseSvg(); //listo
+    // svg = await setScaleAxis(data, svg);//listo
+    svg = await drawData(data);
 
-    return svg2.svgString();
+    return svg;
   }
   catch(e) {
     console.log("ERROR----", e);
@@ -87,34 +85,60 @@ generarChart = async() => {
 };
 
 getBaseSvg = async(d3n) => {
+
+};
+
+drawData = async(data) => {
   const width = 500;
   const height = 500;
 
-  return d3n.createSVG(width, height).append("g");
-};
+  let d3n = new D3Node({});
 
-drawData = async(data, svg) => {
-  const height = 500;
-  const x = d3.scaleTime().range([0, height]);
-  const y = d3.scaleLinear().range([height, 0]);
-  const parseDate = d3.timeParse("%Y-%m-%d");
 
-  x.domain(d3.extent(data, (d) => {
-    return parseDate(d.key);
+  let svg = d3n.createSVG(width, height);
+
+  const xScale = d3.scaleTime().range([0, height]);
+  const yScale = d3.scaleLinear().range([height, 0]);
+
+
+  const g = svg.append('g');
+
+  const parseDate = d3.timeParse("%d/%m/%Y");
+
+  const minMax = d3.extent(data.map((d) => {
+    return parseDate(d.key)
   }));
-  y.domain([0, d3.max(data, (d) => {
+
+  xScale.domain(minMax);
+
+  yScale.domain([0, d3.max(data, (d) => {
     return d.value.no2;
   })]);
 
-  svg.append("g")
+  g.append("g")
     .attr("class", "axis axis--x")
-    .attr("transform", "translate(0," + height + ")")
-    .call(d3.axisBottom(x));
+    .style("fill", "none")
+    .style("stroke", "#000")
+    .style("shape-rendering", "crispEdges")
+    .call(d3.axisBottom(xScale));
 
-  svg.append("g")
+
+  g.append("text")
+    .attr("transform",
+      "translate(" + (height / 2) + " ," +
+      (height + 20) + ")")
+    .style("text-anchor", "middle")
+    .text("Date");
+
+
+  g.append("g")
     .attr("class", "axis axis--y")
     .attr("transform", "translate(0," + height + ")")
-    .call(d3.axisLeft(y));
+    .style("fill", "none")
+    .style("stroke", "#000")
+    .style("shape-rendering", "crispEdges")
+    .call(d3.axisLeft(yScale));
+
 // define the area
 //     const area = d3.area()
 //         .x(function (d) {
@@ -130,31 +154,37 @@ drawData = async(data, svg) => {
 
   const line = d3.line()
     .x((d) => {
-      return x(String(d.key));
+      return xScale(parseDate(d.key));
     })
     .y((d) => {
-      return y(d.value.no2);
-    });
+      return yScale(d.value.no2);
+    })
+    // .curve(d3.curveMonotoneX);
 
-  svg.append("path")
-    .data([data])
+
+  g.selectAll("path")
+    .datum(data)
     .attr("class", "line")
-    .attr("d", line(data));
+    .attr('stroke', "#000000")
+    .attr('stroke-width', 1)
+    .attr("d", line);
+
   //
   // svg.append("path")
   //     // .data(data)
   //     .attr("class", "area")
   //     .attr("d", area);
 
-  return svg;
+  return d3n.svgString();
 };
 
 processData = async(data) => {
-  return d3.nest()
+  const parseDate = d3.timeParse("%d/%m/%Y");
+
+  let newData = d3.nest()
     .key((d) => {
       return d.FECHA;
     })
-    .sortKeys(d3.ascending)
     .rollup((item) => {
       let resultados = processItem(item);
       return {
@@ -164,6 +194,12 @@ processData = async(data) => {
       };
     })
     .entries(data);
+
+  newData.sort((a, b) => {
+    return new Date(a.key) - new Date(b.key);
+  });
+
+  return newData;
 };
 
 processItem = (item) => {
