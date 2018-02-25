@@ -92,8 +92,6 @@ drawData = async(data) => {
   const totalHeight = 500;
   const totalWidth = 1300;
   const margin = { top: 50, right: 50, bottom: 50, left: 50 };
-
-
   const width = totalWidth - margin.left - margin.right;
   const height = totalHeight - margin.top - margin.bottom;
 
@@ -123,7 +121,7 @@ drawData = async(data) => {
   g.append("g")
     .attr("class", "axis axis--x")
     .style("fill", "none")
-    .style("stroke", "#222")
+    .style("stroke", "#39304A")
     .style("font-size", "9px")
     .attr("transform", "translate(0," + height + ")")
     .call(d3.axisBottom(xScale)
@@ -140,7 +138,7 @@ drawData = async(data) => {
   g.append("g")
     .attr("class", "axis axis--y")
     .style("fill", "none")
-    .style("stroke", "#222")
+    .style("stroke", "#39304A")
     .call(d3.axisLeft(yScale));
 
   g.append("text")
@@ -155,42 +153,46 @@ drawData = async(data) => {
     .text("Contaminacion");
 
   //add color labels
-
+  const labelPositionX = 60;
+  const textPositionX = 25;
   g.append("rect")
-    .attr("x", width - margin.right - 30)
+    .attr("x", labelPositionX)
     .attr("y", -10)
     .attr("width", 20)
     .attr("height", 10)
-    .attr("fill", "#bbbbbb");
+    .attr("fill", "#00A878");
 
   g.append("text")
     .attr("transform",
-      "translate(" + (width - margin.right) + " ,0)")
-    .text("NO2");
+      "translate(" + (labelPositionX + textPositionX) + " ,0)")
+    .style("font-size", "10px")
+    .text("Dióxido de nitrógeno");
 
   g.append("rect")
-    .attr("x", width - margin.right - 30)
+    .attr("x", labelPositionX)
     .attr("y", 20)
     .attr("width", 20)
     .attr("height", 10)
-    .attr("fill", "#4fbf5e");
+    .attr("fill", "#FC9E4F");
 
   g.append("text")
     .attr("transform",
-      "translate(" + (width - margin.right) + " ,30)")
-    .text("CO");
+      "translate(" + (labelPositionX + textPositionX) + " ,30)")
+    .style("font-size", "10px")
+    .text("Monóxido de carbono");
 
   g.append("rect")
-    .attr("x", width - margin.right - 30)
+    .attr("x", labelPositionX)
     .attr("y", 50)
     .attr("width", 20)
     .attr("height", 10)
-    .attr("fill", "#974261");
+    .attr("fill", "#9E4770");
 
   g.append("text")
     .attr("transform",
-      "translate(" + (width - margin.right) + " ,60)")
-    .text("PM10");
+      "translate(" + (labelPositionX + textPositionX) + " ,60)")
+    .style("font-size", "10px")
+    .text("Partículas < 10µm ");
 
 // define the line
 
@@ -222,7 +224,7 @@ drawData = async(data) => {
   g.append("path")
     .datum(data)
     .attr("class", "line")
-    .attr("stroke", "#bbbbbb")
+    .attr("stroke", "#00A878")
     .attr("stroke-width", 2)
     .attr("fill", "none")
     .attr("d", lineNo2);
@@ -241,7 +243,7 @@ drawData = async(data) => {
   g.append("path")
     .datum(data)
     .attr("class", "line")
-    .attr("stroke", "#4fbf5e")
+    .attr("stroke", "#FC9E4F")
     .attr("stroke-width", 2)
     .attr("fill", "none")
     .attr("d", lineCo);
@@ -249,12 +251,12 @@ drawData = async(data) => {
   g.append("path")
     .datum(data)
     .attr("class", "line")
-    .attr("stroke", "#974261")
+    .attr("stroke", "#9E4770")
     .attr("stroke-width", 2)
     .attr("fill", "none")
     .attr("d", linePm10);
 
-  return d3n.svgString();
+  return "data:image/svg+xml;utf8," + d3n.svgString();
 };
 
 processData = async(data) => {

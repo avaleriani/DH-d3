@@ -12,7 +12,7 @@ const process = () => {
     fetch("http://localhost:3005/svg")
         .then((resp) => {
             return resp.text().then((text) => {
-                document.getElementById("bar-chart").innerHTML = text;
+                document.getElementById("chart").src = text;
             });
         })
         .catch((e) => {
