@@ -89,21 +89,26 @@ getBaseSvg = async(d3n) => {
 };
 
 drawData = async(data) => {
-  const width = 500;
-  const height = 500;
+  const totalHeight = 500;
+  const totalWidth = 1300;
+  const margin = { top: 50, right: 50, bottom: 50, left: 50 };
+
+
+  const width = totalWidth - margin.left - margin.right;
+  const height = totalHeight - margin.top - margin.bottom;
 
   let d3n = new D3Node({});
 
+  let svg = d3n.createSVG(totalWidth, totalHeight);
 
-  let svg = d3n.createSVG(width, height);
-
-  const xScale = d3.scaleTime().range([0, height]);
+  const xScale = d3.scaleTime().range([0, width]);
   const yScale = d3.scaleLinear().range([height, 0]);
 
+  const g = svg.append('g')
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
+    .attr("font-family", "Helvetica, sanf serif");
 
-  const g = svg.append('g');
-
-  const parseDate = d3.timeParse("%d/%m/%Y");
+  const parseDate = d3.timeParse("%m/%Y");
 
   const minMax = d3.extent(data.map((d) => {
     return parseDate(d.key)
@@ -112,91 +117,167 @@ drawData = async(data) => {
   xScale.domain(minMax);
 
   yScale.domain([0, d3.max(data, (d) => {
-    return d.value.no2;
-  })]);
+    return d3.max([d.value.no2, d.value.pm10, d.value.co]);
+  })]).nice();
 
   g.append("g")
     .attr("class", "axis axis--x")
     .style("fill", "none")
-    .style("stroke", "#000")
-    .style("shape-rendering", "crispEdges")
-    .call(d3.axisBottom(xScale));
-
-
-  g.append("text")
-    .attr("transform",
-      "translate(" + (height / 2) + " ," +
-      (height + 20) + ")")
-    .style("text-anchor", "middle")
-    .text("Date");
-
+    .style("stroke", "#222")
+    .style("font-size", "9px")
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.axisBottom(xScale)
+      .tickFormat(d3.timeFormat("%m/%Y"))
+      .ticks(d3.timeMonth.every(4))
+    )
+    .selectAll("text")
+    .attr("y", 9)
+    .attr("x", 6)
+    .attr("dy", ".35em")
+    .attr("transform", "rotate(45)")
+    .style("text-anchor", "start");
 
   g.append("g")
     .attr("class", "axis axis--y")
-    .attr("transform", "translate(0," + height + ")")
     .style("fill", "none")
-    .style("stroke", "#000")
-    .style("shape-rendering", "crispEdges")
+    .style("stroke", "#222")
     .call(d3.axisLeft(yScale));
 
-// define the area
-//     const area = d3.area()
-//         .x(function (d) {
-//             console.log(d);
-//             return x(d.key);
-//         })
-//         .y0(500)
-//         .y1(function (d) {
-//             return y(d.value.no2);
-//         });
+  g.append("text")
+    .attr("transform",
+      "translate(" + (width / 2) + " ," + (height + margin.bottom) + ")")
+    .style("text-anchor", "middle")
+    .text("Fecha");
+
+  g.append("text")
+    .attr("transform",
+      "translate(" + (-30) + " ," + (height / 2) + ") rotate(270)")
+    .text("Contaminacion");
+
+  //add color labels
+
+  g.append("rect")
+    .attr("x", width - margin.right - 30)
+    .attr("y", -10)
+    .attr("width", 20)
+    .attr("height", 10)
+    .attr("fill", "#bbbbbb");
+
+  g.append("text")
+    .attr("transform",
+      "translate(" + (width - margin.right) + " ,0)")
+    .text("NO2");
+
+  g.append("rect")
+    .attr("x", width - margin.right - 30)
+    .attr("y", 20)
+    .attr("width", 20)
+    .attr("height", 10)
+    .attr("fill", "#4fbf5e");
+
+  g.append("text")
+    .attr("transform",
+      "translate(" + (width - margin.right) + " ,30)")
+    .text("CO");
+
+  g.append("rect")
+    .attr("x", width - margin.right - 30)
+    .attr("y", 50)
+    .attr("width", 20)
+    .attr("height", 10)
+    .attr("fill", "#974261");
+
+  g.append("text")
+    .attr("transform",
+      "translate(" + (width - margin.right) + " ,60)")
+    .text("PM10");
 
 // define the line
 
-  const line = d3.line()
+  const lineNo2 = d3.line()
     .x((d) => {
       return xScale(parseDate(d.key));
     })
     .y((d) => {
       return yScale(d.value.no2);
+    }).curve(d3.curveCatmullRom.alpha(0.5));
+
+  const lineCo = d3.line()
+    .x((d) => {
+      return xScale(parseDate(d.key));
     })
-    // .curve(d3.curveMonotoneX);
+    .y((d) => {
+      return yScale(d.value.co);
+    }).curve(d3.curveMonotoneX);
+
+  const linePm10 = d3.line()
+    .x((d) => {
+      return xScale(parseDate(d.key));
+    })
+    .y((d) => {
+      return yScale(d.value.pm10);
+    }).curve(d3.curveMonotoneX);
 
 
-  g.selectAll("path")
+  g.append("path")
     .datum(data)
     .attr("class", "line")
-    .attr('stroke', "#000000")
-    .attr('stroke-width', 1)
-    .attr("d", line);
+    .attr("stroke", "#bbbbbb")
+    .attr("stroke-width", 2)
+    .attr("fill", "none")
+    .attr("d", lineNo2);
 
-  //
-  // svg.append("path")
-  //     // .data(data)
-  //     .attr("class", "area")
-  //     .attr("d", area);
+  g.selectAll("dot")
+    .data(data)
+    .enter().append("circle")
+    .attr("r", 2)
+    .attr("cx", (d) => {
+      return xScale(parseDate(d.key));
+    })
+    .attr("cy", (d) => {
+      return yScale(d.value.no2);
+    });
+
+  g.append("path")
+    .datum(data)
+    .attr("class", "line")
+    .attr("stroke", "#4fbf5e")
+    .attr("stroke-width", 2)
+    .attr("fill", "none")
+    .attr("d", lineCo);
+
+  g.append("path")
+    .datum(data)
+    .attr("class", "line")
+    .attr("stroke", "#974261")
+    .attr("stroke-width", 2)
+    .attr("fill", "none")
+    .attr("d", linePm10);
 
   return d3n.svgString();
 };
 
 processData = async(data) => {
   const parseDate = d3.timeParse("%d/%m/%Y");
+  const formatDate = d3.timeFormat("%m/%Y");
+  const parseDateSort = d3.timeParse("%m/%Y");
 
   let newData = d3.nest()
     .key((d) => {
-      return d.FECHA;
+      return formatDate(parseDate(d.FECHA));
     })
     .rollup((item) => {
       let resultados = processItem(item);
       return {
-        no2: resultados.no2.length > 0 ? d3.mean(resultados.no2) : 0,
-        co: resultados.co.length > 0 ? d3.mean(resultados.co) : 0,
-        pm10: resultados.pm10.length > 0 ? d3.mean(resultados.pm10) : 0
+        no2: resultados.no2.length > 0 ? parseInt(d3.mean(resultados.no2)) : 0,
+        co: resultados.co.length > 0 ? parseInt(d3.mean(resultados.co)) : 0,
+        pm10: resultados.pm10.length > 0 ? parseInt(d3.mean(resultados.pm10)) : 0
       };
     })
     .entries(data);
 
   newData.sort((a, b) => {
-    return new Date(a.key) - new Date(b.key);
+    return parseDateSort(a.key) - parseDateSort(b.key);
   });
 
   return newData;
@@ -225,13 +306,16 @@ processItem = (item) => {
       }
     }
   });
+
+
   return resultados
 };
 
 
 setScaleAxis = async(data, svg) => {
   const height = 500;
-  const x = d3.scaleTime().range([0, height]);
+  const width = 1550;
+  const x = d3.scaleTime().range([0, width]);
   const y = d3.scaleLinear().range([height, 0]);
   const parseDate = d3.timeParse("%Y-%m-%d");
 
@@ -244,12 +328,10 @@ setScaleAxis = async(data, svg) => {
 
   svg.append("g")
     .attr("class", "axis axis--x")
-    .attr("transform", "translate(0," + height + ")")
     .call(d3.axisBottom(x));
 
   svg.append("g")
     .attr("class", "axis axis--y")
-    .attr("transform", "translate(0," + height + ")")
     .call(d3.axisLeft(y));
 
   return svg;
@@ -258,8 +340,8 @@ setScaleAxis = async(data, svg) => {
 
 getData = async() => {
   try {
-    if (fs.existsSync("data/calidad-de-aire-2009-2017.csv")) {
-      const file = fs.readFileSync("data/calidad-de-aire-2009-2017.csv", "utf8");
+    if (fs.existsSync("data/calidad-de-aire-2009-2017-big.csv")) {
+      const file = fs.readFileSync("data/calidad-de-aire-2009-2017-big.csv", "utf8");
       if (file) {
         return d3.csvParse(file);
       } else {

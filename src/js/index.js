@@ -12,13 +12,13 @@ const process = () => {
     fetch("http://localhost:3005/svg")
         .then((resp) => {
             return resp.text().then((text) => {
-                console.log(JSON.stringify(text))
                 document.getElementById("bar-chart").innerHTML = text;
             });
         })
         .catch((e) => {
             console.error("error" + e);
         });
+
 };
 
 
