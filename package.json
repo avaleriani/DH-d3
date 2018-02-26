@@ -42,6 +42,7 @@
     "webpack-dev-server": "2.7.1"
   },
   "dependencies": {
-    "d3": "^4.12.2"
+    "d3": "^4.12.2",
+    "load-google-maps-api": "^1.1.1"
   }
 }
