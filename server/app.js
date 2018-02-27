@@ -1,21 +1,16 @@
 const express = require('express');
-const path = require('path');
-const favicon = require('serve-favicon');
-const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
-const papaParser = require('papaparse');
 const fs = require('fs');
 const cors = require('cors');
 
 const D3Node = require('d3-node');
-const d3 = require('d3');
+const d3n = new D3Node();
+const d3 = d3n.d3;
 
 let app = express();
 
-app.use(favicon('./favicon.ico'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
 app.use(express.static('public'));
 
 app.use(cors({
@@ -71,52 +66,44 @@ app.use('/svg', async(req, res) => {
 
 generarChart = async() => {
   try {
-    let data = await getData();//listo
-    data = await processData(data);//listo
-    // svg = await getBaseSvg(); //listo
-    // svg = await setScaleAxis(data, svg);//listo
-    svg = await drawData(data);
+    const totalHeight = 500;
+    const totalWidth = 1300;
+    const margin = { top: 50, right: 50, bottom: 50, left: 50 };
+    const width = totalWidth - margin.left - margin.right;
+    const height = totalHeight - margin.top - margin.bottom;
+    const xScale = d3.scaleTime().range([0, width]);
+    const yScale = d3.scaleLinear().range([height, 0]);
+    const parseDate = d3.timeParse("%m/%Y");
 
-    return svg;
+    let svg = d3n.createSVG(totalWidth, totalHeight);
+
+    let data = await getData();
+    data = await processData(data, parseDate);
+    g = await setScaleAxis(svg, width, height, margin, xScale, yScale, parseDate, data);
+    g = await addLabels(g);
+    g = await drawNo2(g, xScale, yScale, parseDate, data);
+    g = await drawCo(g, xScale, yScale, parseDate, data);
+    g = await drawPm10(g, xScale, yScale, parseDate, data);
+
+    return "data:image/svg+xml;utf8," + d3n.svgString();
   }
   catch(e) {
     console.log("ERROR----", e);
   }
 };
 
-getBaseSvg = async(d3n) => {
-
-};
-
-drawData = async(data) => {
-  const totalHeight = 500;
-  const totalWidth = 1300;
-  const margin = { top: 50, right: 50, bottom: 50, left: 50 };
-  const width = totalWidth - margin.left - margin.right;
-  const height = totalHeight - margin.top - margin.bottom;
-
-  let d3n = new D3Node({});
-
-  let svg = d3n.createSVG(totalWidth, totalHeight);
-
-  const xScale = d3.scaleTime().range([0, width]);
-  const yScale = d3.scaleLinear().range([height, 0]);
-
+setScaleAxis = async(svg, width, height, margin, xScale, yScale, parseDate, data) => {
   const g = svg.append('g')
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
     .attr("font-family", "Helvetica, sanf serif");
 
-  const parseDate = d3.timeParse("%m/%Y");
 
   const minMax = d3.extent(data.map((d) => {
     return parseDate(d.key)
   }));
 
   xScale.domain(minMax);
-
-  yScale.domain([0, d3.max(data, (d) => {
-    return d3.max([d.value.no2, d.value.pm10, d.value.co]);
-  })]).nice();
+q
 
   g.append("g")
     .attr("class", "axis axis--x")
@@ -152,7 +139,11 @@ drawData = async(data) => {
       "translate(" + (-30) + " ," + (height / 2) + ") rotate(270)")
     .text("Contaminacion");
 
-  //add color labels
+  return g;
+};
+
+
+addLabels = async(g) => {
   const labelPositionX = 60;
   const textPositionX = 25;
   g.append("rect")
@@ -194,16 +185,10 @@ drawData = async(data) => {
     .style("font-size", "10px")
     .text("Partículas < 10µm ");
 
-// define the line
+  return g;
+};
 
-  const lineNo2 = d3.line()
-    .x((d) => {
-      return xScale(parseDate(d.key));
-    })
-    .y((d) => {
-      return yScale(d.value.no2);
-    }).curve(d3.curveCatmullRom.alpha(0.5));
-
+drawCo = async(g, xScale, yScale, parseDate, data) => {
   const lineCo = d3.line()
     .x((d) => {
       return xScale(parseDate(d.key));
@@ -212,6 +197,18 @@ drawData = async(data) => {
       return yScale(d.value.co);
     }).curve(d3.curveMonotoneX);
 
+  g.append("path")
+    .datum(data)
+    .attr("class", "line")
+    .attr("stroke", "#FC9E4F")
+    .attr("stroke-width", 2)
+    .attr("fill", "none")
+    .attr("d", lineCo);
+
+  return g;
+};
+
+drawPm10 = async(g, xScale, yScale, parseDate, data) => {
   const linePm10 = d3.line()
     .x((d) => {
       return xScale(parseDate(d.key));
@@ -220,6 +217,26 @@ drawData = async(data) => {
       return yScale(d.value.pm10);
     }).curve(d3.curveMonotoneX);
 
+  g.append("path")
+    .datum(data)
+    .attr("class", "line")
+    .attr("stroke", "#9E4770")
+    .attr("stroke-width", 2)
+    .attr("fill", "none")
+    .attr("d", linePm10);
+
+  return g;
+};
+
+drawNo2 = async(g, xScale, yScale, parseDate, data) => {
+
+  const lineNo2 = d3.line()
+    .x((d) => {
+      return xScale(parseDate(d.key));
+    })
+    .y((d) => {
+      return yScale(d.value.no2);
+    }).curve(d3.curveCatmullRom.alpha(0.5));
 
   g.append("path")
     .datum(data)
@@ -240,29 +257,12 @@ drawData = async(data) => {
       return yScale(d.value.no2);
     });
 
-  g.append("path")
-    .datum(data)
-    .attr("class", "line")
-    .attr("stroke", "#FC9E4F")
-    .attr("stroke-width", 2)
-    .attr("fill", "none")
-    .attr("d", lineCo);
-
-  g.append("path")
-    .datum(data)
-    .attr("class", "line")
-    .attr("stroke", "#9E4770")
-    .attr("stroke-width", 2)
-    .attr("fill", "none")
-    .attr("d", linePm10);
-
-  return "data:image/svg+xml;utf8," + d3n.svgString();
+  return g
 };
 
-processData = async(data) => {
+processData = async(data, parseDateSort) => {
   const parseDate = d3.timeParse("%d/%m/%Y");
   const formatDate = d3.timeFormat("%m/%Y");
-  const parseDateSort = d3.timeParse("%m/%Y");
 
   let newData = d3.nest()
     .key((d) => {
@@ -308,37 +308,8 @@ processItem = (item) => {
       }
     }
   });
-
-
   return resultados
 };
-
-
-setScaleAxis = async(data, svg) => {
-  const height = 500;
-  const width = 1550;
-  const x = d3.scaleTime().range([0, width]);
-  const y = d3.scaleLinear().range([height, 0]);
-  const parseDate = d3.timeParse("%Y-%m-%d");
-
-  x.domain(d3.extent(data, (d) => {
-    return parseDate(d.key);
-  }));
-  y.domain([0, d3.max(data, (d) => {
-    return d.value.no2;
-  })]);
-
-  svg.append("g")
-    .attr("class", "axis axis--x")
-    .call(d3.axisBottom(x));
-
-  svg.append("g")
-    .attr("class", "axis axis--y")
-    .call(d3.axisLeft(y));
-
-  return svg;
-};
-
 
 getData = async() => {
   try {
