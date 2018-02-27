@@ -6,6 +6,7 @@ gMapsLoader.KEY = "AIzaSyAHs5pRSCrgEFaS_4L1s8lRijcDvFggNbI";
 gMapsLoader.LANGUAGE = "es";
 gMapsLoader.REGION = "AR";
 
+
 gMapsLoader().then((googleMaps) => {
   new googleMaps.Map(document.querySelector(".map"), {
     center: {
