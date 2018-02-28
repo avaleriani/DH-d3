@@ -1,4 +1,10 @@
 {
-  "presets": ["env"],
-  "plugins": ["transform-class-properties"]
+    "presets": [
+        "env",
+        "stage-0",
+        "es2015"
+    ],
+    "plugins": [
+        "transform-class-properties"
+    ]
 }
