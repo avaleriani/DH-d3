@@ -13,6 +13,7 @@ class Map {
     this.gmaps.REGION = "AR";
     this.gmaps().then((googleMaps) => {
       let map = this.defineMap(googleMaps);
+      console.log(map);
       this.buildMap(map);
     }).catch(function(error) {
       console.error("ERROR", error)
@@ -20,8 +21,8 @@ class Map {
   }
 
 
-  defineMap(googleMaps) {
-    new googleMaps.Map(d3.select(".map").node(), {
+  async defineMap(googleMaps) {
+    return await new googleMaps.Map(d3.select(".map").node(), {
       center: {
         lat: 40.7484405,
         lng: -73.9944191
@@ -31,8 +32,8 @@ class Map {
     })
   };
 
-  buildMap() {
-    d3.json("/data/entries.csv", (error, data) => {
+  async buildMap() {
+    d3.csv("http://localhost:3000/data", (error, data) => {
       if (error) throw error;
 
       const overlay = new google.maps.OverlayView();

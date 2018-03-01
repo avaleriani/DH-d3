@@ -4,6 +4,7 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const Autoprefixer = require('autoprefixer');
 const path = require('path');
+const polyfill = require("babel-polyfill");
 console.log(__dirname)
 module.exports = {
     devtool: 'eval',
@@ -25,7 +26,7 @@ module.exports = {
             parallel: true,
         })
     ],
-    entry: './src/js/index.js',
+    entry:["babel-polyfill", './src/js/index.js'] ,
     output: {
         path: path.join(__dirname, './public'),
         filename: 'js/bundle.js',
