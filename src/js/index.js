@@ -1,20 +1,16 @@
 import * as d3 from "d3";
-import styles from "../scss/styles.scss";
 import gMapsLoader from "load-google-maps-api";
 
 class Map {
-  constructor() {
-    this.gmaps = gMapsLoader;
-  }
+  async initialize() {
+    let options = [];
+    options.key = "AIzaSyAxWx5EvdXwckDz1A7B0UNkA9Hh74vqi-w";
+    options.region = "AR";
+    gMapsLoader(options).then((googleMaps) => {
+      this.defineMap(googleMaps).then((map) => {
+        this.buildMap(map);
+      });
 
-  initialize() {
-    this.gmaps.KEY = "AIzaSyAHs5pRSCrgEFaS_4L1s8lRijcDvFggNbI";
-    this.gmaps.LANGUAGE = "es";
-    this.gmaps.REGION = "AR";
-    this.gmaps().then((googleMaps) => {
-      let map = this.defineMap(googleMaps);
-      console.log(map);
-      this.buildMap(map);
     }).catch(function(error) {
       console.error("ERROR", error)
     });
@@ -32,21 +28,27 @@ class Map {
     })
   };
 
-  async buildMap() {
-    d3.csv("http://localhost:3000/data", (error, data) => {
+  async processData(data) {
+    console.log(data)
+    return data;
+  };
+
+  async buildMap(map) {
+    return await d3.csv("http://localhost:3000/data", (error, data) => {
       if (error) throw error;
+      data = this.processData(data);
 
       const overlay = new google.maps.OverlayView();
 
       // Add the container when the overlay is added to the map.
-      overlay.onAdd = function() {
-        var layer = d3.select(this.getPanes().overlayLayer).append("div")
+      overlay.onAdd = () => {
+        let layer = d3.select(this.getPanes().overlayLayer).append("div")
           .attr("class", "circle");
-        overlay.draw = function() {
-          var projection = this.getProjection(),
+        overlay.draw = () => {
+          let projection = this.getProjection(),
             padding = 10;
 
-          var marker = layer.selectAll("svg")
+          let marker = layer.selectAll("svg")
             .data(d3.entries(data))
             .each(transform) // update existing markers
             .enter().append("svg")
@@ -77,8 +79,6 @@ class Map {
           }
         };
       };
-
-      // Bind our overlay to the map…
       overlay.setMap(map);
     })
     ;
