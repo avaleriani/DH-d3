@@ -2,6 +2,10 @@ import * as d3 from "d3";
 import gMapsLoader from "load-google-maps-api";
 
 class Map {
+  constructor() {
+    this.colorEspecies = [];
+  }
+
   async initialize() {
     let options = [];
     options.key = "AIzaSyAxWx5EvdXwckDz1A7B0UNkA9Hh74vqi-w";
@@ -36,7 +40,7 @@ class Map {
       .rollup((item) => {
         item = item[0];
         return {
-          "especie": parseInt(item.ID_ESPECIE),
+          "id_especie": parseInt(item.ID_ESPECIE),
           "x": Number(item.Y.replace(/,/g, ".")),
           "y": Number(item.X.replace(/,/g, ".")),
           "altura": parseInt(item.ALTURA_TOT),
@@ -74,26 +78,22 @@ class Map {
           .enter().append("circle")
           .attr("cx", (d) => proj.fromLatLngToContainerPixel(new google.maps.LatLng(d.value.x, d.value.y)).x)
           .attr("cy", (d) => proj.fromLatLngToContainerPixel(new google.maps.LatLng(d.value.x, d.value.y)).y)
-          .attr("r", 5)
-          .attr("fill", "red");
-        // .attr("fill", (d) => d.color);
+          .attr("r", "2")
+          .attr("fill", (d) => this.getColor(d.value.id_especie));
         document.body.appendChild(layer);
-        //   console.log(proj)
-        //   d3.select(layer)
-        //     .select(".coords")
-        //     .selectAll("circle")
-        //     .data(data)
-        //     .attr("cx", (d) => {
-        //       console.log(proj.fromLatLngToContainerPixel(new google.maps.LatLng(d.value.x, d.value.y)));
-        //       return proj.fromLatLngToContainerPixel(new google.maps.LatLng(d.value.x, d.value.y)).x
-        //     })
-        //     // .attr("cy", (d) => proj.fromLatLngToContainerPixel(new google.maps.LatLng(d.value.x, d.value.y)).y);
       };
       overlay.draw = () => {
         this.drawTrees(data, overlay, layer)
       };
       overlay.setMap(map);
     });
+  };
+
+  getColor(idEspecie) {
+    if (!this.colorEspecies[idEspecie]) {
+      this.colorEspecies[idEspecie] = `#${Math.floor(Math.random() * 0x1000000).toString(16).padStart(6, 0)}`;
+    }
+    return this.colorEspecies[idEspecie];
   };
 
   drawTrees(data, overlay, layer) {
