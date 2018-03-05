@@ -19,75 +19,94 @@ class Map {
 
   async defineMap(googleMaps) {
     return await new googleMaps.Map(d3.select(".map").node(), {
-      center: {
-        lat: 40.7484405,
-        lng: -73.9944191
-      },
+      center: new google.maps.LatLng(-34.603722, -58.381592),
       mapTypeId: google.maps.MapTypeId.TERRAIN,
-      zoom: 12
+      zoom: 11,
+      disableDefaultUI: true,
+      backgroundColor: "#002732"
     })
   };
 
   async processData(data) {
-    console.log(data)
-    return data;
+    data = await d3.dsvFormat(";").parse(JSON.parse(data).data);
+    return d3.nest()
+      .key((d) => {
+        return d.ID_ARBOL + "-" + d.NOMBRE_CIE;
+      })
+      .rollup((item) => {
+        item = item[0];
+        return {
+          "especie": parseInt(item.ID_ESPECIE),
+          "x": Number(item.Y.replace(/,/g, ".")),
+          "y": Number(item.X.replace(/,/g, ".")),
+          "altura": parseInt(item.ALTURA_TOT),
+          "diametro": parseInt(item.DIAMETRO),
+          "ubicacion": item.UBICACION
+        };
+      })
+      .entries(data);
   };
 
   async buildMap(map) {
-    return await d3.csv("http://localhost:3000/data", (error, data) => {
+    return await d3.text("http://localhost:3000/data", async(error, data) => {
       if (error) throw error;
-      data = this.processData(data);
+      data = await this.processData(data);
 
       const overlay = new google.maps.OverlayView();
 
-      // Add the container when the overlay is added to the map.
+      let layer = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      layer.style.position = "absolute";
+      layer.style.top = 0;
+      layer.style.left = 0;
+      layer.style.width = "100%";
+      layer.style.height = "100%";
+      layer.style.pointerEvents = "none";
+      layer.style.marginTop = "80px";
+      layer.id = "svg";
+
       overlay.onAdd = () => {
-        let layer = d3.select(this.getPanes().overlayLayer).append("div")
-          .attr("class", "circle");
-        overlay.draw = () => {
-          let projection = this.getProjection(),
-            padding = 10;
-
-          let marker = layer.selectAll("svg")
-            .data(d3.entries(data))
-            .each(transform) // update existing markers
-            .enter().append("svg")
-            .each(transform)
-            .attr("class", "marker");
-
-          // Add a circle.
-          marker.append("circle")
-            .attr("r", 4.5)
-            .attr("cx", padding)
-            .attr("cy", padding);
-
-          // Add a label.
-          marker.append("text")
-            .attr("x", padding + 7)
-            .attr("y", padding)
-            .attr("dy", ".31em")
-            .text(function(d) {
-              return d.key;
-            });
-
-          function transform(d) {
-            d = new google.maps.LatLng(d.value[1], d.value[0]);
-            d = projection.fromLatLngToDivPixel(d);
-            return d3.select(this)
-              .style("left", (d.x - padding) + "px")
-              .style("top", (d.y - padding) + "px");
-          }
-        };
+        let proj = overlay.getProjection();
+        d3.select(layer)
+          .append("g")
+          .attr("class", "coords")
+          .selectAll("circle")
+          .data(data, (d) => d.key)
+          .enter().append("circle")
+          .attr("cx", (d) => proj.fromLatLngToContainerPixel(new google.maps.LatLng(d.value.x, d.value.y)).x)
+          .attr("cy", (d) => proj.fromLatLngToContainerPixel(new google.maps.LatLng(d.value.x, d.value.y)).y)
+          .attr("r", 5)
+          .attr("fill", "red");
+        // .attr("fill", (d) => d.color);
+        document.body.appendChild(layer);
+        //   console.log(proj)
+        //   d3.select(layer)
+        //     .select(".coords")
+        //     .selectAll("circle")
+        //     .data(data)
+        //     .attr("cx", (d) => {
+        //       console.log(proj.fromLatLngToContainerPixel(new google.maps.LatLng(d.value.x, d.value.y)));
+        //       return proj.fromLatLngToContainerPixel(new google.maps.LatLng(d.value.x, d.value.y)).x
+        //     })
+        //     // .attr("cy", (d) => proj.fromLatLngToContainerPixel(new google.maps.LatLng(d.value.x, d.value.y)).y);
+      };
+      overlay.draw = () => {
+        this.drawTrees(data, overlay, layer)
       };
       overlay.setMap(map);
-    })
-    ;
+    });
+  };
+
+  drawTrees(data, overlay, layer) {
+    const proj = overlay.getProjection();
+    d3.select(layer)
+      .select(".coords")
+      .selectAll("circle")
+      .data(data, (d) => d.key)
+      .attr("cx", (d) => proj.fromLatLngToContainerPixel(new google.maps.LatLng(d.value.x, d.value.y)).x)
+      .attr("cy", (d) => proj.fromLatLngToContainerPixel(new google.maps.LatLng(d.value.x, d.value.y)).y);
   };
 }
 
 module.exports = Map;
 
 new Map().initialize();
-
-
-

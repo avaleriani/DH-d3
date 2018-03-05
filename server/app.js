@@ -8,7 +8,7 @@ const cors = require("cors");
 
 let app = express();
 
-app.use(cors())
+app.use(cors());
 app.use(favicon("./favicon.ico"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
@@ -16,7 +16,8 @@ app.use(cookieParser());
 app.use(express.static("public"));
 
 app.use("/data", function(req, res) {
-  const file = fs.readFileSync(path.join(__dirname + "/../data/entries.csv"), "utf8");
+  const file = fs.readFileSync(path.join(__dirname + "/../data/entries-mini.csv"), "utf8");
+
   res.json({ data: file });
 });
 
