@@ -42,3 +42,6 @@ que vamos a procesar del lado del cliente.
 `yarn start`
 
 Este comando arma un build listo para produccion y corre el servidor de node para hacer funcionar todo el proyecto.
+
+Aclaracion: Se recomienda modificar el nombre del archivo a "entries-mini.csv" en el endpoint para que sea
+mas rapido el desarrollo, luego volver a "entries.csv" cuando este lista la app.
