@@ -14,7 +14,6 @@ class Map {
   async initialize() {
     let options = [];
     options.key = "AIzaSyAxWx5EvdXwckDz1A7B0UNkA9Hh74vqi-w";
-    options.region = "AR";
     gMapsLoader(options).then((googleMaps) => {
       this.defineMap(googleMaps).then((map) => {
         this.buildMap(map);
@@ -58,33 +57,21 @@ class Map {
 
   async buildMap(map) {
     let context = this.setUpCanvas();
-
     return await d3.text("http://localhost:3000/data", async(error, data) => {
       if (error) throw error;
       data = await this.processData(data);
-
       const overlay = new google.maps.OverlayView();
-
-      let layer = document.createElement('custom');
-      layer.style.position = "absolute";
-      layer.style.top = 0;
-      layer.style.left = 0;
-      layer.style.width = this.width;
-      layer.style.height = this.height;
-      layer.style.pointerEvents = "none";
-      layer.style.marginTop = "80px";
-      layer.id = "svg";
-
+      const layer = this.setLayer();
       overlay.onAdd = () => {
         let proj = overlay.getProjection();
         d3.select(layer)
           .append("custom")
           .attr("class", "coords")
           .selectAll("circle")
-          .data(data, (d) => d.key)
+          .data(data, d => d.key)
           .enter().append("circle")
-          .attr("cx", (d) => proj.fromLatLngToContainerPixel(new google.maps.LatLng(d.value.x, d.value.y)).x)
-          .attr("cy", (d) => proj.fromLatLngToContainerPixel(new google.maps.LatLng(d.value.x, d.value.y)).y)
+          .attr("cx", d => proj.fromLatLngToContainerPixel(new google.maps.LatLng(d.value.x, d.value.y)).x)
+          .attr("cy", d => proj.fromLatLngToContainerPixel(new google.maps.LatLng(d.value.x, d.value.y)).y)
           .attr("r", "1")
           .attr("fill", (d) => this.getColor(d.value.id_especie));
         this.drawCustomToCanvas(context, layer, map);
@@ -97,6 +84,19 @@ class Map {
       overlay.setMap(map);
     });
   };
+
+  setLayer() {
+    const layer = document.createElement("custom");
+    layer.style.position = "absolute";
+    layer.style.top = 0;
+    layer.style.left = 0;
+    layer.style.width = this.width;
+    layer.style.height = this.height;
+    layer.style.pointerEvents = "none";
+    layer.style.marginTop = "80px";
+    layer.id = "svg";
+    return layer;
+  }
 
   getColor(idEspecie) {
     if (!this.colorEspecies[idEspecie]) {
@@ -117,18 +117,18 @@ class Map {
   };
 
   setUpCanvas() {
-    const canvas = d3.select('.map')
-      .style('width', this.width)
-      .style('height', this.height)
-      .append('canvas')
-      .attr('width', this.width)
-      .attr('height', this.height)
+    const canvas = d3.select(".map")
+      .style("width", this.width)
+      .style("height", this.height)
+      .append("canvas")
+      .attr("width", this.width)
+      .attr("height", this.height)
       .style("position", "absolute")
       .style("top", "0")
       .style("left", "0")
       .style("pointer-events", "none");
 
-    return canvas.node().getContext('2d');
+    return canvas.node().getContext("2d");
   }
 
   drawCustomToCanvas(context, layer, map) {
