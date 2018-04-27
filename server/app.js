@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const cors = require('cors');
+const path = require('path');
 
 const D3Node = require('d3-node');
 const d3n = new D3Node();
@@ -20,30 +21,6 @@ app.use(cors({
   'methods': 'GET,HEAD,PUT,PATCH,POST,DELETE',
   'preflightContinue': false
 }));
-
-//
-// app.use('/data', function (req, res) {
-//     try {
-//         const filePath = path.join(__dirname, '../data/calidad-de-aire-2009-2017.csv');
-//         const file = fs.readFileSync(filePath, {encoding: 'binary'});
-//
-//         papaParser.parse(file, {
-//             header: true,
-//             dynamicTyping: true,
-//             fastMode: true,
-//             complete: (results) => {
-//                 res.setHeader('Content-Type', 'application/json');
-//                 res.send(JSON.stringify(results));
-//             },
-//             error: (error) => {
-//                 res.setHeader('Content-Type', 'application/json');
-//                 res.send(JSON.stringify({'error': error}));
-//             }
-//         });
-//     } catch (e) {
-//         console.error(e);
-//     }
-// });
 
 app.use('/svg', async(req, res) => {
   res.setHeader('Content-Type', 'application/json');
@@ -103,7 +80,6 @@ setScaleAxis = async(svg, width, height, margin, xScale, yScale, parseDate, data
   }));
 
   xScale.domain(minMax);
-q
 
   g.append("g")
     .attr("class", "axis axis--x")
@@ -332,12 +308,12 @@ app.use('/', function(req, res) {
   res.sendFile(path.join(__dirname + '../../../public/index.html'));
 });
 
-// // catch 404 and forward to error handler
-// app.use(function (req, res, next) {
-//     let err = new Error('Not Found');
-//     err.status = 404;
-//     next(err);
-// });
+// catch 404 and forward to error handler
+app.use(function (req, res, next) {
+    let err = new Error('Not Found');
+    err.status = 404;
+    next(err);
+});
 //
 // app.use(function (err, req, res) {
 //     res.status(err.status || 500);

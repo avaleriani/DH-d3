@@ -6,9 +6,8 @@
   "scripts": {
     "pre": "npm i -g yarn && yarn global add pm2 webpack",
     "dev": "webpack-dev-server --inline --progress --colors --content-base src/ --open --watch-content-base=true --bail",
-    "dev:server": "set NODE_ENV=DEBUG=\"*\" pm2 kill && pm2 start ./bin/www --merge-logs --log-date-format=\"YYYY-MM-DD HH:mm\" --watch \"server/\" --ignore-watch \"*.csv\" --no-daemon && pm2 logs www --lines 50",
+    "dev-server": "set NODE_ENV=DEBUG=\"*\" pm2 kill && pm2 start ./bin/www --merge-logs --log-date-format=\"YYYY-MM-DD HH:mm\" --watch \"server/\" --ignore-watch \"*.csv\" --no-daemon && pm2 logs www --lines 50",
     "start": "pm2 kill && webpack -p && pm2 start ./bin/www",
-    "post-project": "npm uninstall pm2 webpack -g",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "browserslist": [
