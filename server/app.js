@@ -74,12 +74,12 @@ setScaleAxis = async(svg, width, height, margin, xScale, yScale, parseDate, data
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")")
     .attr("font-family", "Helvetica, sanf serif");
 
-
   const minMax = d3.extent(data.map((d) => {
     return parseDate(d.key)
   }));
 
-  xScale.domain(minMax);
+  xScale.domain(minMax); //maximo y minimo del eje x
+  yScale.domain([0, 120]); //maximo y minimo del eje y
 
   g.append("g")
     .attr("class", "axis axis--x")
@@ -289,8 +289,9 @@ processItem = (item) => {
 
 getData = async() => {
   try {
-    if (fs.existsSync("data/calidad-de-aire-2009-2017-big.csv")) {
-      const file = fs.readFileSync("data/calidad-de-aire-2009-2017-big.csv", "utf8");
+    const filename = "data/calidad-de-aire-2009-2017-big.csv";
+    if (fs.existsSync(filename)) {
+      const file = fs.readFileSync(filename, "utf8");
       if (file) {
         return d3.csvParse(file);
       } else {
@@ -314,53 +315,13 @@ app.use(function(req, res, next) {
   err.status = 404;
   next(err);
 });
-//
-// app.use(function (err, req, res) {
-//     res.status(err.status || 500);
-//     res.render('error', {
-//         message: err.message,
-//         error: (app.get('env') === 'development') ? err : {}
-//     });
-// });
-//
-// processGenerateSmallCVS = () => {
-//     try {
-//         const filePath = path.join(__dirname, '../data/calidad-de-aire-2009-2017-big.csv');
-//         const file = fs.readFileSync(filePath, {encoding: 'binary'});
-//
-//         papaParser.parse(file, {
-//             header: true,
-//             dynamicTyping: true,
-//             fastMode: true,
-//             complete: (results) => {
-//                 let dateArr = [];
-//                 results = results.data.filter((item, index) => {
-//                     if (!dateArr.includes(item.FECHA)) {
-//                         dateArr.push(item.FECHA);
-//                         return true;
-//                     } else {
-//                         return false;
-//                     }
-//
-//                 });
-//                 fs.writeFile(path.join(__dirname, '../data/calidad-de-aire-2009-2017.csv'), papaParser.unparse(results), 'utf8', function (err) {
-//                     if (err) {
-//                         console.log('Error');
-//                     } else{
-//                         console.log('Generado!');
-//                     }
-//                 });
-//
-//             },
-//             error: (error) => {
-//                 console.error(error);
-//             }
-//         });
-//     } catch (e) {
-//         console.error(e);
-//     }
-//
-// };
-// processGenerateSmallCVS();
+
+app.use(function(err, req, res) {
+  res.status(err.status || 500);
+  res.render('error', {
+    message: err.message,
+    error: (app.get('env') === 'development') ? err : {}
+  });
+});
 
 module.exports = app;
