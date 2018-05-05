@@ -6,7 +6,7 @@ const path = require('path');
 
 const D3Node = require('d3-node');
 const d3n = new D3Node();
-const d3 = d3n.d3;
+const  d3 = d3n.d3;
 
 let app = express();
 

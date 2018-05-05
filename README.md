@@ -2,13 +2,6 @@
 
 # Clase 4 - Arboles de la ciudad.
 
- Observar la evolucion promedio a traves de los años (2009 - 2017) de la calidad del aire medida en la Ciudad autonoma de buenos aires.
-
-1) Cual es el año con mejor calidad de aire?
-2) La tendencia es a la alza o a la baja?
-
-
-
 ### Pre-requisitios
 
 _Node: < 8.9.3_
@@ -34,7 +27,7 @@ Este comando va a crear un servidor de desarrollo frontend en la direccion http:
 automaticamente con cada cambio de html, js o scss.
 
 
-###Desarrollo del lado del servidor
+### Desarrollo del lado del servidor
 
 `yarn run dev-server`
 
@@ -48,4 +41,8 @@ que vamos a procesar del lado del cliente.
 
 Este comando arma un build listo para produccion y corre el servidor de node para hacer funcionar todo el proyecto.
 
+## Para desarrollar normalmente vamos a correr en una consola `yarn run dev` y en otra
+instancia de la consola `yarn run dev-server`. Esto va a crear el servidor de desarrollo de frontend en `http://localhost:8080/`
+y el servidor de la api en `http://localhost:3005/`.
+Accediendo a la primer direccion vamos a poder ver nuestra aplicacion.
 
