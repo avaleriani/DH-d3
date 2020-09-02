@@ -1,6 +1,6 @@
 ![N|Solid](https://static.acaula.com.ar/center/AR/180-digital-house-43cb5b1f-b336-4f72-a772-a99ed3e54037-logo-200x200.jpg)
 
-#Clase 1 - Grafico de barras
+# Clase 1 - Grafico de barras
 
 
 
