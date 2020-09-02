@@ -4,26 +4,26 @@
 
 
 
-###Pre-requisitios
+### Pre-requisitios
 
 _Node: < 8.9.3_
 
 _Npm: < 5.5.1_
 
-###Instalacion
+### Instalacion
 
 `npm run pre`
 
 `yarn install`
 
-###Desarrollo frontend
+### Desarrollo frontend
 
 `yarn run dev`
 
-###Desarrollo server
+### Desarrollo server
 
 `yarn run dev-server`
 
-###Build de produccion y correr server
+### Build de produccion y correr server
 
 `yarn start`
